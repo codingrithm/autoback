@@ -4,17 +4,14 @@ FROM golang:1.21 AS build
 # ワークディレクトリを設定
 WORKDIR /app
 
-# Goのソースコードをコピー
+# Goの依存関係ファイルをコピー
 COPY . .
 
-# Goのアプリケーションをビルド
-RUN CGO_ENABLED=0 GOOS=linux go build -o myapp
+# Goの依存関係をダウンロード
+RUN go mod download
 
-# ランタイムステージ
-FROM scratch
+# Airをインストール
+RUN go install github.com/cosmtrek/air@latest
 
-# ビルドしたバイナリをコピー
-COPY --from=build /app/myapp /myapp
-
-# アプリケーションを起動
-CMD ["/myapp"]
+# アプリケーションを起動 (Airでホットリロードを有効化)
+CMD ["air"]
